@@ -1,0 +1,351 @@
+{% extends 'home.html' %}
+
+{% block content %}
+
+<div class="main-banner wow fadeIn" data-wow-duration="2s" data-wow-delay="0.5s">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="top-text header-text">
+                    <h2>Bone Anomaly Detection</h2>
+                    <p class="subtitle" style="color: white;">Upload an X-ray image to detect abnormalities</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="contact-page">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="inner-content">
+                    <div class="row">
+                        <!-- Left Column - Results Display -->
+                        <div class="col-lg-6">
+                            <div class="results-container">
+                                {% if file_name %}
+                                <div class="result-card">
+                                    <div class="status-badge {% if status == 'Normal' %}normal{% else %}abnormal{% endif %}">
+                                        <i class="bi bi-{% if status == 'Normal' %}check-circle{% else %}exclamation-triangle{% endif %}"></i>
+                                        {{ status }} 
+                                    </div>
+                                    
+                                    <div class="image-card">
+                                        <div class="image-container">
+                                            <img src="{{ url_for('static', filename='uploaded_images/' + file_name) }}" 
+                                                 class="result-image" 
+                                                 alt="X-ray Image">
+                                            <div class="image-overlay">
+                                                <span class="bone-type">{{ bone_type }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Upload Form -->
+                        <div class="col-lg-6 align-self-center">
+                            <div class="upload-container">
+                                <div class="upload-card">
+                                    <div class="upload-header">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <h3>Upload X-ray Image</h3>
+                                        <p>Supported formats: JPG, JPEG, PNG</p>
+                                    </div>
+                                    
+                                    <form action="{{ url_for('prediction') }}" method="POST" enctype="multipart/form-data">
+                                        <div class="upload-area" id="dropArea">
+                                            <div class="upload-icon">
+                                                <i class="bi bi-file-earmark-image"></i>
+                                            </div>
+                                            <input type="file" name="file" id="fileInput" 
+                                                   class="upload-input" required 
+                                                   accept="image/png, image/jpeg, image/jpg">
+                                            <label for="fileInput" class="upload-label">
+                                                <span class="browse-text">Browse files</span> or drag and drop
+                                            </label>
+                                            <div class="invalid-feedback" id="fileError">
+                                                Please upload a valid image file (PNG, JPG, JPEG).
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="upload-footer">
+                                            <button type="submit" class="analyze-btn">
+                                                <i class="bi bi-magic"></i> Analyze Image
+                                            </button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Main Banner Styles */
+    .main-banner {
+        background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('/static/assets/images/banner-bg.jpg');
+        background-position: center center;
+        background-size: cover;
+        padding: 120px 0px;
+        text-align: center;
+        color: #fff;
+    }
+    
+    .main-banner .top-text h2 {
+        font-size: 36px;
+        font-weight: 700;
+        margin-bottom: 15px;
+    }
+    
+    .main-banner .subtitle {
+        font-size: 18px;
+        font-weight: 300;
+        margin-bottom: 30px;
+    }
+    
+    /* Results Section */
+    .results-container {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        padding: 25px;
+        height: 100%;
+    }
+    
+    .result-card {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .status-badge {
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 18px;
+    }
+    
+    .status-badge.normal {
+        background-color: #d4edda;
+        color: #155724;
+    }
+    
+    .status-badge.abnormal {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    
+    .image-card {
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .image-container {
+        position: relative;
+        padding-top: 100%; /* Square aspect ratio */
+        background: #f8f9fa;
+    }
+    
+    .result-image {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+    
+    .image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 12px;
+        text-align: center;
+    }
+    
+    .bone-type {
+        font-weight: 600;
+        font-size: 18px;
+    }
+    
+    /* Upload Section */
+    .upload-container {
+        padding: 0 15px;
+    }
+    
+    .upload-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+    }
+    
+    .upload-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+    
+    .upload-header i {
+        font-size: 48px;
+        color: #2575fc;
+        margin-bottom: 15px;
+    }
+    
+    .upload-header h3 {
+        font-weight: 600;
+        margin-bottom: 5px;
+    }
+    
+    .upload-header p {
+        color: #6c757d;
+        font-size: 14px;
+    }
+    
+    .upload-area {
+        border: 2px dashed #dee2e6;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        transition: all 0.3s;
+        margin-bottom: 20px;
+        position: relative;
+    }
+    
+    .upload-area:hover, .upload-area.dragover {
+        border-color: #2575fc;
+        background-color: #f8faff;
+    }
+    
+    .upload-icon {
+        font-size: 48px;
+        color: #adb5bd;
+        margin-bottom: 15px;
+    }
+    
+    .upload-label {
+        display: block;
+        cursor: pointer;
+        color: #495057;
+    }
+    
+    .browse-text {
+        color: #2575fc;
+        font-weight: 500;
+    }
+    
+    .upload-input {
+        position: absolute;
+        width: 0;
+        height: 0;
+        opacity: 0;
+    }
+    
+    .analyze-btn {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(to right, #2575fc, #6a11cb);
+        border: none;
+        color: white;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: all 0.3s;
+    }
+    
+    .analyze-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(37, 117, 252, 0.3);
+    }
+    
+    .analyze-btn i {
+        margin-right: 8px;
+    }
+    
+    #fileError {
+        color: #dc3545;
+        font-size: 14px;
+        margin-top: 10px;
+        display: none;
+    }
+</style>
+
+<script>
+    // File input validation
+    const fileInput = document.getElementById('fileInput');
+    const fileError = document.getElementById('fileError');
+    const dropArea = document.getElementById('dropArea');
+    
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        dropArea.classList.add('dragover');
+    }
+    
+    function unhighlight() {
+        dropArea.classList.remove('dragover');
+    }
+    
+    dropArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        fileInput.files = files;
+        updateFileName();
+    }
+    
+    fileInput.addEventListener('change', function() {
+        updateFileName();
+    });
+    
+    function updateFileName() {
+        if (fileInput.files.length > 0) {
+            const fileName = fileInput.files[0].name;
+            const label = dropArea.querySelector('.upload-label');
+            label.innerHTML = `<span class="text-success">${fileName}</span>`;
+        }
+    }
+    
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const file = fileInput.files[0];
+        
+        if (!file || !file.type.match(/image\/(jpeg|png|jpg)/)) {
+            e.preventDefault();
+            fileError.style.display = 'block';
+        } else {
+            fileError.style.display = 'none';
+        }
+    });
+</script>
+
+{% endblock %}
